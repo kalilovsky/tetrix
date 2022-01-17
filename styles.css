@@ -1,0 +1,10 @@
+@font-face {
+    font-family: "Matrix";
+    src: url("./Font/Matrix.woff") format("woff"),
+    url("./Font/Matrix.ttf") format('truetype');
+    
+           
+   }
+nav{
+    font-family: "Matrix"!important;
+}
