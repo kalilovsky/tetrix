@@ -279,7 +279,7 @@ function init ()
     canvas.height = (hauteurGrille) * carreau;
     canvas.width = largeurGrille*carreau;
     canvas.style.border = "3px solid red";
-    var myFont = new FontFace('myFont', 'url(/Font/Matrix.ttf)');
+    var myFont = new FontFace('myFont', 'url(./Font/Matrix.ttf)');
                     myFont.load().then(function(font){
                         document.fonts.add(font);
                         console.log('Font loaded');
