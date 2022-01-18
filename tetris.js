@@ -4,7 +4,10 @@ const hauteurGrille = 28;
 let grilleGame;
 const carreau = 20;	// Taille en pixels d'une case de la grille
 let canvas = document.getElementById("mainViewGame");
-let ctx = canvas.getContext("2d") ;
+let ctx = canvas.getContext("2d");
+//init next canvas
+let canvasNext = document.getElementById('nextForme');
+let ctxNext = canvasNext.getContext("2d");
 // Position de la forme sur le canvas
 const XInitial = 5;
 const YInitial = 0;
@@ -12,14 +15,53 @@ var formX = XInitial;
 var formY = YInitial;
 //Timing intervall
 let timeInterval;
+let delay = 500
 //intialisation des element html
 let startButton = document.getElementById("startButton");
 let versionButton = document.getElementById('versionButton')
 let versionGraphique = "matrix"	
 // Tableau de définition des formes
 let forme = new Array();
+let gameVal = {
+    score :0,
+    level :0
+}
 
-
+// attribution du temps en fonction du level
+const niveau = {
+    0: 800,
+    1: 720,
+    2: 630,
+    3: 550,
+    4: 470,
+    5: 380,
+    6: 300,
+    7: 220,
+    8: 130,
+    9: 100,
+    10: 80,
+    11: 80,
+    12: 80,
+    13: 70,
+    14: 70,
+    15: 70,
+    16: 50,
+    17: 50,
+    18: 50,
+    19: 30,
+    20: 30,
+    // 29+ is 20ms
+  }
+  Object.freeze(niveau); //bloqué l'objet level ce qui fait qu'on restera figer à 29 si on depasse
+  //création de l'objet points
+  const points = {
+    1: 100,
+    2: 300,
+    3: 500,
+    4: 800,
+    }
+  Object.freeze(points); //et le figer 
+  
 forme[0]= [
     [	// rotation 0
         [0,0,0,0],
@@ -123,7 +165,7 @@ forme[5]= [
         [0,0,0],
         [1,1,0],
         [1,1,0],
-        [0,0,0],
+        [0,0,0]
     ]
 ]; 
 //faire le tableau des couleurs des formes
@@ -135,6 +177,7 @@ couleursForme[3] = ["chocolate","crimson"]
 couleursForme[4] = ["darkblue","darkorange"]
 couleursForme[5] = ["green","deeppink"]
 // initialisation aléatoire de la forme qui vient et la rotation numero 1
+let nextForme = Math.floor(Math.random()*forme.length);
 let numForme = Math.floor(Math.random()*forme.length);
 let rotation = 0;
 let oldRotation = rotation;
@@ -172,6 +215,38 @@ document.onkeydown = function(e) {
     }
     }
 
+//verifier si il y a des lignes
+function linesCheck () {
+    let lines = 0
+    //boucle pour verifier chaque ligne
+    grilleGame.forEach ((row,y)=>{
+        //boucle qui verifier que chaque valeur dans une ligne est pllus grande que ZERO
+        if(row.every(valeur => valeur>0)){
+            lines++
+            //enlevé la ligne dans la ligne du tableau
+            grilleGame.splice(y,1); 
+            //la remplacer par une autre ligne en haut remplie de zéro
+            grilleGame.unshift(Array(largeurGrille).fill("")) 
+            scoreLevel(lines);
+        }
+
+    });
+}
+//actualisation du score et du level
+function scoreLevel (ligne){
+    gameVal.score += points[ligne];
+    gameVal.level+=1
+    delay=niveau[gameVal.level]
+}
+
+//gameover
+function gameOver(){
+     
+        delay=0
+        ctx.font = "36px Matrix";
+        ctx.fillText("GAME OVER", 2*carreau-10, 14*carreau+10);
+    
+}
 //lancer l'intervall de temps 
 startButton.addEventListener("click", () => {
     if(timeInterval) {
@@ -179,7 +254,7 @@ startButton.addEventListener("click", () => {
             timeInterval=null;
             startButton.innerText = 'Start Game';
     }else {
-        timeInterval = setInterval(moveDown,500);
+        timeInterval = setInterval(moveDown,delay);
         startButton.innerText = 'Pause Game';
     }
 })
@@ -204,15 +279,62 @@ function init ()
     canvas.height = (hauteurGrille) * carreau;
     canvas.width = largeurGrille*carreau;
     canvas.style.border = "3px solid red";
-    var myFont = new FontFace('myFont', 'url(./Font/Matrix.ttf)');
+    var myFont = new FontFace('myFont', 'url(/Font/Matrix.ttf)');
                     myFont.load().then(function(font){
                         document.fonts.add(font);
                         console.log('Font loaded');
                         ctx.font = "12px myFont"; // set font
-                      })
+                      }) 
+    //init du ctx pour la prochaine forme
+    canvasNext.height = 8*carreau;
+    canvasNext.width=8*carreau
+    //canvasNext.style.border = "3px solid red";
     initGrille();
     actualisationCanvas();
-   
+    
+                      
+}
+//Dessin de la prochaine forme
+function initNextForme(){
+    
+    //aléatoire de la prochaine forme
+    nextForme = Math.floor(Math.random()*forme.length);
+    //dessiner le prochaine forme
+    
+}
+
+// dessin next form
+function dessinNextForm (){
+    forme[nextForme][0].forEach((col,x) => {
+        forme[nextForme][0][x].forEach((valeur,y)=>{
+            if (valeur===1){
+                if (versionGraphique==="matrix"){
+                  ctxNext.fillStyle ="green";
+                  ctxNext.font = "Matrix";
+                  ctxNext.fillText(valeur, (~~y+3)*carreau-10, (~~x+3)*carreau+10);
+                  
+                } else {
+                    //dessiner le rectangle
+                    ctxNext.fillStyle = couleursForme[numForme][0];
+                    ctxNext.fillRect((3 + ~~y)*carreau, (3+~~x)*carreau,carreau,carreau);
+                    //Dessiner les bordures
+                    ctxNext.fillStyle = couleursForme[numForme][1];
+                    ctxNext.fillRect((3 + ~~y)*carreau + 1, (3+~~x)*carreau + 1,carreau - 2,carreau - 2);
+               
+                }
+            }
+        });
+    });
+    ctxNext.font = "16px Matrix";
+    ctxNext.fillText("Score : "+gameVal.score, carreau-10, carreau+10);
+    ctxNext.fillText("Level : "+gameVal.level, carreau-10, 2*carreau+10);
+    ctxNext.fillText("Delat : "+delay, carreau-10, 3*carreau+10);
+}
+//nettoyage du CTX de nextform avant nouveau dessin
+function nextFormeClean() {
+          
+        ctxNext.clearRect(0,0,8 * carreau, 8 * carreau);
+    
 }
 // initialisation du tableau à deux dimension du board
 
@@ -254,12 +376,21 @@ function caseVide(x,y){
 }
 //création de la nouvelle forme et fixation de la forme en bas
 function nouvelleForm (){
+    
 figerForm();
 formX = XInitial;
 formY = YInitial;
 rotation = 0;
-numForme = Math.floor(Math.random()*forme.length);
+numForme = nextForme
+if (!collisionDetect(0,1)) {
+    let i = collisionDetect(0,1)
+    gameOver();
+} else {
+
+
+initNextForme();
 actualisationCanvas();
+}
 }
 //figer la forme à sa place et la faire entrer réelement dans le tableau du board quand la forme 
 // fais un collision en mouvement vers le bas
@@ -297,6 +428,7 @@ function actualisationGrille(){
 
 function actualisationCanvas ()
 {
+    linesCheck();
     ctx.save();
     if (versionGraphique=='matrix') {
         ctx.fillStyle = 'rgba(255,255,255,0.3)';
@@ -307,6 +439,8 @@ function actualisationCanvas ()
     
     dessinerForme(grilleGame);
     actualisationGrille();
+    nextFormeClean()
+    dessinNextForm();
     ctx.restore();
 }
 
@@ -342,6 +476,7 @@ function dessinerForme(grilleArray) {
 function moveDown (){
     if (!collisionDetect(0,1)){ //si une collision avec la bordure
         nouvelleForm(); //fixer l'ancienne form et créer une nouvelle
+       
     }else { // Si il n'y a aucune collision detéctés 
         formY++;
         actualisationCanvas();
