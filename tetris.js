@@ -328,7 +328,7 @@ function dessinNextForm (){
     ctxNext.font = "16px Matrix";
     ctxNext.fillText("Score : "+gameVal.score, carreau-10, carreau+10);
     ctxNext.fillText("Level : "+gameVal.level, carreau-10, 2*carreau+10);
-    ctxNext.fillText("Delat : "+delay, carreau-10, 3*carreau+10);
+    ctxNext.fillText("Delay : "+delay, carreau-10, 3*carreau+10);
 }
 //nettoyage du CTX de nextform avant nouveau dessin
 function nextFormeClean() {
